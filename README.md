@@ -152,3 +152,8 @@ A Verilog testbench can be created to verify each instruction using **assertions
 - Implements **arithmetic, logical, and shift operations** using minimal hardware.
 - Can be integrated into a **RISC-V processor pipeline** to execute ALU operations efficiently.
 
+---
+
+## **RTL Schematic of RISC-V ALU (Gate Level Modelling) **
+![Arithemetic Logic Unit](https://github.com/SaiManojGubbala/RISC-V-RV32I/blob/main/Screenshot%20from%202025-03-11%2019-19-53.png)
+
