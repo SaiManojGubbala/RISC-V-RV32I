@@ -1,0 +1,4 @@
+synth.ys
+test.v
+testbenches.v
+mux32x5_tb.vcd
