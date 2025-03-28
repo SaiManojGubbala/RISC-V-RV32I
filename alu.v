@@ -1,4 +1,4 @@
-`include "circuits.v"
+`include "elements.v"
 
 module or_32 (
     input [31:0] A,B,
@@ -147,22 +147,10 @@ shift_logic a65(.A({Op1[0],31'b0}),.B({Op1[0],Op1[1], Op1[2], Op1[3], Op1[4], Op
 
 endmodule
 
-module ad32(input [31:0]a,b,
-input c,
-output [31:0] sum,
-output carry);
-
-wire connectors;
-
-ad16 q11(.a(a[15:0]),.b(b[15:0]),.c(c),.sum(sum[15:0]),.carry(connectors));
-ad16 q12(.a(a[31:16]),.b(b[31:16]),.c(connectors),.sum(sum[31:16]),.carry(carry));
-
-endmodule
-
-
 module arithemetic(input [31:0] A,B,
 input funct7_5,
 input [2:0] funct_3,
+output branch_u,
 output [31:0] Result);
 
 wire [31:0] connectors;
@@ -179,10 +167,13 @@ wire [31:0] slt = {31'b0,sum[31]};
 wire pr;
 mux4x1 z3(.A({sum[31],1'b1,1'b0,nsum}),.S({A[31],B[31]}),.Y(pr));
 wire [31:0] sltu = {31'b0,pr};
-
+assign branch_u = pr;
 wire [31:0] co;
 mux2x1_32bit z5(.a(slt), .b(sltu), .sel(funct_3[0]), .out(co));
 mux2x1_32bit z6(.a(sum), .b(co), .sel(funct_3[1]), .out(Result));
+
+
+
 endmodule
 
 module logic_block(input [31:0] A,B,
@@ -199,16 +190,17 @@ mux2x1_32bit g5(.a(connectors_0),.b(connectors_3),.sel(funct3[1]),.out(Result));
 
 endmodule
 
-module alu ( Op1,Op2,Alu_Control,Result,Zero_f,Sign_f );
+module alu ( Op1,Op2,Alu_Control,Result,Zero_f,Sign_f,branch_u );
 input [31:0] Op1, Op2;
 input [3:0] Alu_Control;//Alu_Control[0] = funct7_5
 output [31:0] Result;
+output branch_u;
 output Zero_f, Sign_f;
 
 // control signals for resultant mux .....
 wire [3:0] connectors ;
 wire [3:0] connector ;
-wire n_0,n_1,n_2;
+wire n_0,n_1, n_2;
 not(n_0,Alu_Control[1]);
 not(n_1,Alu_Control[2]);
 not(n_2,Alu_Control[3]);
@@ -227,7 +219,7 @@ or(connector[3],connector[0],connector[1],connector[2]);
 
 logic_block v1(.A(Op1),.B(Op2),.funct3(Alu_Control[2:1]), .Result(Log));
 shifter v2(.Op1(Op1),.S(Alu_Control[3]),.funct7_5(Alu_Control[0]),.Shift(Op2[4:0]),.Result(shift));
-arithemetic v3(.A(Op1),.B(Op2),.funct7_5(Alu_Control[0]),.funct_3(Alu_Control[3:1]),.Result(Arith));
+arithemetic v3(.A(Op1),.B(Op2),.funct7_5(Alu_Control[0]),.funct_3(Alu_Control[3:1]),.branch_u(branch_u),.Result(Arith));
 
 mux2x1_32bit g6(.a(shift),.b(Log),.sel(connector[3]),.out(co));
 mux2x1_32bit g7(.a(co),.b(Arith),.sel(connectors[3]),.out(Result));
@@ -238,5 +230,4 @@ and32bit g9(.in(core),.out(Zero_f));
 assign Sign_f = Result[31];
 
 endmodule
-
 
